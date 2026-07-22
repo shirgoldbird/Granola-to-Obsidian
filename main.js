@@ -2904,6 +2904,13 @@ class GranolaSyncSettingTab extends obsidian.PluginSettingTab {
 			.addToggle(toggle => {
 				toggle.setValue(this.plugin.settings.syncAllHistoricalNotes);
 				toggle.onChange(async (value) => {
+					// Turning this on means reaching further back than the API-mode
+					// incremental marker allows - clear it so the next sync does a
+					// full fetch, matching how this toggle behaves in local mode
+					if (value && this.plugin.settings.lastApiSync) {
+						this.plugin.settings.lastApiSync = '';
+						new obsidian.Notice('Granola Sync: the next sync will fetch all historical notes.');
+					}
 					this.plugin.settings.syncAllHistoricalNotes = value;
 					await this.plugin.saveSettings();
 					this.display(); // Refresh to show/hide document limit setting
@@ -2921,6 +2928,12 @@ class GranolaSyncSettingTab extends obsidian.PluginSettingTab {
 					text.onChange(async (value) => {
 						const limit = parseInt(value);
 						if (!isNaN(limit) && limit > 0) {
+							// A raised limit means reaching further back than the
+							// API-mode incremental marker allows - clear it so the
+							// next sync re-fetches up to the new limit
+							if (limit > this.plugin.settings.documentSyncLimit && this.plugin.settings.lastApiSync) {
+								this.plugin.settings.lastApiSync = '';
+							}
 							this.plugin.settings.documentSyncLimit = limit;
 							await this.plugin.saveSettings();
 						} else {
