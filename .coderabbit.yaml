@@ -1,0 +1,38 @@
+# CodeRabbit configuration — https://docs.coderabbit.ai/reference/yaml-template
+language: en-GB
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  auto_review:
+    enabled: true
+    base_branches:
+      - main
+  path_instructions:
+    - path: "main.js"
+      instructions: |
+        This is a single-file Obsidian plugin with no build step — main.js is
+        shipped as-is, so it must stay plain CommonJS JavaScript (no TypeScript,
+        no ESM imports, no syntax newer than Obsidian's bundled Electron
+        supports). Node APIs (fs, path, https, child_process) are acceptable
+        because the plugin is desktop-only (isDesktopOnly in manifest.json).
+        Watch for: unbounded network requests without timeouts, credential
+        material leaking into console logs or error messages, and sync-loop
+        regressions around duplicate detection (granola_id frontmatter is the
+        canonical identity for a note).
+    - path: "manifest.json"
+      instructions: |
+        The version here must exactly match the release tag (no "v" prefix)
+        and be mirrored in versions.json. Flag any version change that isn't
+        accompanied by a CHANGELOG.md entry.
+    - path: "readme.md"
+      instructions: |
+        User-facing docs in British English. The "Network use & background
+        activity" section must stay accurate: any new network code path or
+        contacted host added in main.js must be reflected there.
+
+chat:
+  auto_reply: true
