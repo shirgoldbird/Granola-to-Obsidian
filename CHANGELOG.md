@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.12.1] - 2026-08-05
+
+### Fixed
+- **🌐 API mode now works on machines where Obsidian's network stack is blocked**: On some machines, Obsidian's `requestUrl()` (Electron/Chromium's network stack) cannot reach `public-api.granola.ai` at all — it rejects with a bare `net::ERR_FAILED` before any HTTP response — even though `curl` and Node succeed from the same machine and network. Diagnosed live with the reporting user, with VPN, proxy, and MDM/EDR causes individually ruled out; the remaining culprit is a client-side difference in how Electron negotiates with Granola's load balancer. When `requestUrl` fails at the network level, the plugin now retries the request once through Node's `https` module (a different network stack) before giving up. The fallback is bounded by a 30-second timeout and race-guarded against double settlement, and only engages after `requestUrl` has already thrown, so machines where the existing path works are unaffected. Reported by [@andrewsong-usm](https://github.com/andrewsong-usm) in [#66](https://github.com/dannymcc/Granola-to-Obsidian/issues/66); fixed by [@andrewsong-tech](https://github.com/andrewsong-tech) in [#68](https://github.com/dannymcc/Granola-to-Obsidian/pull/68).
+- **🔎 Auth failures now show Granola's actual error**: 401/403 responses from the official API carry a structured `{ code, message }` body (e.g. `MISSING_API_KEY`, `INVALID_API_KEY`) that distinguishes "no key sent" from "malformed key" from "revoked key / wrong plan". The error notice now surfaces that message instead of only the status code.
+
+### Documentation
+- The readme now documents the official API key auth mode (which shipped in 1.12.0 undocumented): setup steps, Business/Enterprise plan requirement, API-mode limitations, and a troubleshooting section for `net::ERR_FAILED`-style connectivity failures. The "Network use & background activity" section correctly lists `public-api.granola.ai` as a contacted host in API mode.
+
+### Credits
+- Thanks to [@andrewsong-tech](https://github.com/andrewsong-tech) for diagnosing the Electron-vs-Node network stack issue directly with the affected user and contributing the fallback in [#68](https://github.com/dannymcc/Granola-to-Obsidian/pull/68).
+
 ## [1.12.0] - 2026-07-22
 
 ### Added
