@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [1.12.1] - 2026-07-21
 
+### Fixed
+- **Meeting rooms and group aliases no longer become attendee tags**: Calendar invitee lists include bookable resources (`c_1885…@resource.calendar.google.com`) and group addresses (`team-api-core@example.com`) alongside real people. Because these have no display name, the email localpart was used instead, producing tags like `person/c-1885jur41crmik6gseagvjq5ocde` and `person/team-api-core`. Non-human invitees are now skipped outright (Google's `resource: true` flag, or any `*.calendar.google.com` address). In API mode, the invitee list is also demoted to a fallback: when a note carries its own `attendees` those are the people who were actually in the meeting and they come with real names, so invitees are only consulted when there are no attendees at all. Local-app auth mode is unaffected apart from the resource filter.
+- **Headings no longer keep a gap where a character was stripped**: Titles containing a filesystem-invalid character produced a double space in the note's H1, e.g. `Shir / Ming` became `# Shir  Ming`. Whitespace is now collapsed after stripping.
+
 ### Changed
 - **🔐 API key now stored in the macOS Keychain instead of plaintext data.json**: `data.json` lives inside the vault, so a plaintext key travels with vault sync and backups. On macOS the key is now written to a Keychain item (`granola-sync-plus` / `granola-api-key`) via the `security` CLI the plugin already uses, and only a flag is persisted in settings. Existing plaintext keys are migrated automatically on plugin load and scrubbed from `data.json`. If the Keychain write fails, the plugin falls back to plaintext storage rather than losing the key. Windows keeps plaintext storage (noted in the setting description).
 - **API-mode incremental sync state auto-resets when settings reach further back**: Enabling "Sync all historical notes" or raising the document sync limit now clears the incremental marker automatically, so those settings take effect on the next sync (matching their local-mode behavior) instead of requiring a manual "Reset API sync state" click.
